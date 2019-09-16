@@ -1,6 +1,8 @@
+#pylint: disable=invalid-name
 """Data types"""
 
-from typing import NamedTuple
+
+from typing import List
 
 
 Role = str
@@ -14,8 +16,3 @@ Password = str
 PasswordHash = str
 
 SessionID = str
-
-class UserData(NamedTuple):
-
-    login: Login
-    roles: RoleList

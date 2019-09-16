@@ -9,6 +9,8 @@ pytest = "*"
 [packages]
 casbin = "*"
 python-ldap = "*"
+flake8 = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.7"

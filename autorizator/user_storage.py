@@ -2,10 +2,10 @@
 
 
 from autorizator.errors import AutorizatorError
-from autorizator.datatypes import Login, UserData
+from autorizator.data_types import Login, Password, Role
 
 
-class UserStorageError(AutorizatorError)
+class UserStorageError(AutorizatorError):
     """User Storage errors"""
 
     pass
@@ -41,14 +41,14 @@ class AbstractUserService:
 
         raise NotImplementedError()
 
-    def get_user_role(self, login: Login) -> UserData:
+    def get_user_role(self, login: Login) -> Role:
         """Returns user data for the give login.
 
         Args:
             login: the requested use login
 
         Returns:
-            An insntance of autorizator.datatypes.UserData if the user was
+            The associated role if the user was
             found, otherwise None.
 
         Raises:

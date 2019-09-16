@@ -9,9 +9,9 @@ import casbin
 import casbin.model
 
 
-class Autorizator
+class Autorizator:
 
-    def __init__(self, policies: RoleActionPolicyList, user_storage: AbstractUserService, session_manager: AbstractSessionManager)
+    def __init__(self, policies: RoleActionPolicyList, user_storage: AbstractUserService, session_manager: AbstractSessionManager):
         self._user_storage = user_storage
         self._session_manager = session_manager
 
