@@ -1,6 +1,8 @@
 """Declare user store interface and base types"""
 
 
+from abc import ABC, abstractmethod
+
 from autorizator.errors import AutorizatorError
 from autorizator.data_types import Login, Password, Role
 
@@ -11,13 +13,13 @@ class UserStorageError(AutorizatorError):
     pass
 
 
-class UserNotFound(AutorizatorError):
+class UserNotFoundError(AutorizatorError):
     """The requested user was not found"""
 
     pass
 
 
-class AbstractUserService:
+class AbstractUserService(ABC):
     """Base class defining the interface of User Storage.
 
        One might claim that Python does not need that,
@@ -25,6 +27,7 @@ class AbstractUserService:
        you implemented all methods.
     """
 
+    @abstractmethod
     def authenticate(self, login: Login, password: Password) -> bool:
         """Authenticates the user
 
@@ -36,11 +39,12 @@ class AbstractUserService:
             True if user authentication succeeds, otherwise False.
 
         Raises:
-            autorizator.userstorage.UserNotFound: If the user was not found.
+            autorizator.user_storage.UserNotFoundError: If the user was not found.
         """
 
         raise NotImplementedError()
 
+    @abstractmethod
     def get_user_role(self, login: Login) -> Role:
         """Returns user data for the give login.
 

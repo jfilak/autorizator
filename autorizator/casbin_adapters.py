@@ -1,11 +1,11 @@
-#pylint: disable=invalid-name
 """casbin adapter"""
 
 
-from typing import NamedTuple, List
+from typing import List
 
 import casbin.persist
 
+from autorizator.errors import AutorizatorError
 from autorizator.data_types import Role, RoleList, ActionList
 
 
@@ -34,11 +34,12 @@ class RoleActionPolicyAdapter(casbin.persist.Adapter):
         know_roles = set()
 
         for policy in role_policies:
-            if policy.role in self._know_roles:
+            if policy.role in know_roles:
                 raise RolePolicyDefinitionError(f'The role "{policy.role}" defined twice')
 
-            if role_policy.includes:
-                if any((include not in know_roles for include in role_policy.includes)):
+            if policy.includes:
+                include = next((include not in know_roles for include in policy.includes), None)
+                if include is not None:
                     raise RolePolicyDefinitionError(
                         f'The role "{include}" included in the role "{policy.role}" does not exist')
 
@@ -48,8 +49,8 @@ class RoleActionPolicyAdapter(casbin.persist.Adapter):
 
     def load_policy(self, model):
         for policy in self._policies:
-            for action in role.actions:
-                model.model['p'][role].policy.append([action])
+            for action in policy.actions:
+                model.model['p'][policy.role].policy.append([action])
 
-            for include in role.includes:
-                model.model['g'][role].policy.append([include])
+            for include in policy.includes:
+                model.model['g'][policy.role].policy.append([include])
