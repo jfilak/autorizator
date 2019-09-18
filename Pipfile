@@ -11,6 +11,7 @@ casbin = "*"
 python-ldap = "*"
 flake8 = "*"
 pylint = "*"
+pymongo = "*"
 
 [requires]
 python_version = "3.7"
