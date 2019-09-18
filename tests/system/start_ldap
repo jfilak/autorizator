@@ -1,0 +1,51 @@
+AZ_LDAP_IMG=osixia/openldap
+AZ_LDAP_CTR=company_ldap
+
+
+DOCKER="sudo docker"
+
+function stop_ldap
+{
+    ${DOCKER} rm -f company_ldap
+}
+
+function start_ldap
+{
+    ${DOCKER} run -e LDAP_ORGANISATION="Company" -e LDAP_DOMAIN="company.cz" -e LDAP_ADMIN_PASSWORD="JonSn0w" -d --name $AZ_LDAP_CTR $AZ_LDAP_IMG
+
+    sleep 3
+
+    echo "Adding the Org. Unit People"
+    ${DOCKER} exec -i company_ldap ldapadd -x -w JonSn0w -D "cn=admin,dc=company,dc=cz" <<_EOF
+dn: ou=People,dc=company,dc=cz
+objectClass: organizationalUnit
+ou: People
+description: Users
+_EOF
+
+    echo "Adding Jakub Filak"
+    ${DOCKER} exec -i company_ldap ldapadd -x -w JonSn0w -D "cn=admin,dc=company,dc=cz" <<_EOF
+dn: cn=Jakub Filak,ou=People,dc=company,dc=cz
+cn: Jakub Filak
+objectClass: organizationalPerson
+sn: Filak
+objectClass: posixAccount
+uid: jfilak
+homeDirectory: /home/jfilak
+gidNumber: 1000
+uidNumber: 4269
+_EOF
+
+    echo "Setting password for Jakub Filak"
+    ${DOCKER} exec -i company_ldap ldapmodify -x -D "cn=admin,dc=company,dc=cz" -w JonSn0w <<_EOF
+dn: cn=Jakub Filak,ou=People,dc=company,dc=cz
+changetype: modify
+replace: userPassword
+userPassword: {SSHA}XLiGkBVqXHjmNuUPqDEbH6tv6fZTQzg9
+_EOF
+
+    echo "Searching Jakub Filak"
+    ldapsearch -x -H ldap://172.17.0.2 -b "cn=Jakub Filak,ou=People,dc=company,dc=cz" -D "cn=admin,dc=company,dc=cz" -w JonSn0w
+}
+
+start_ldap

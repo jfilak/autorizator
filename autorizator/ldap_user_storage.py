@@ -32,7 +32,7 @@ class LDAPUserStorage(AbstractUserService):
                              ldap.SCOPE_SUBTREE,
                              filterstr=self._get_user_part(login),
                              timeout=60)
-        role = res[0]['role']
+        role = res[0]['gidNumber']
 
         conn.unbind()
 
