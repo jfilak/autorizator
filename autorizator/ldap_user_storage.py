@@ -2,37 +2,94 @@
 LDAP server.
 """
 
+from typing import NamedTuple
+import logging
+
 import ldap
 
 from autorizator.data_types import Login, Password, Role
 from autorizator.user_storage import AbstractUserService
 
 
+class LDAPUserAuth(NamedTuple):
+    who: str
+    cred: str
+
+
 class LDAPUserStorage(AbstractUserService):
     """LDAP user storage proxy"""
 
-    def __init__(self, host_uri: str, org_unit: str, domain: str):
+    def __init__(self, host_uri: str, org_unit: str, domain: str, service_account: LDAPUserAuth=None):
+        """Initializes LDAP storage
+
+        Args:
+            host_uri: scheme + host + port; e.g. ldap://172.17.0.2:389
+            org_unit: Organization Unit name where all users belongs into; will
+                      be used in LDAP search for ou= part
+            domain:   Domain
+            service_account: User Credentials when search requires authentication
+        """
+
         self._host_uri = host_uri
+        self._svc_acnt = service_account
         self._base_dn = ','.join((f'dc={dc}' for dc in domain.split('.')))
         self._ou = f'ou={org_unit},{self._base_dn}'
+        self._role_field = 'gidNumber'
+        self._login_field = 'uid'
+        self._encoding = 'utf-8'
+
+    @property
+    def role_field(self):
+        return self._role_field
+
+    @role_field.setter
+    def role_field(self, value):
+        self._role_field = value
+
+    @property
+    def login_field(self):
+        return self._login_field
+
+    @login_field.setter
+    def logine_field(self, value):
+        self._login_field = value
+
+    @property
+    def encoding(self):
+        return self. encoding
+
+    @encoding.setter
+    def encoding(self, value):
+        self._encoding= value
 
     def _get_user_part(self, login: Login) -> str:
-        return f'uid={login}'
+        return f'{self._login_field}={login}'
 
     def authenticate(self, login: Login, password: Password) -> bool:
-        conn = ldap.ldapobject.ReconnectLDAPObject(self._host_uri)
+        conn = ldap.initialize(self._host_uri)
         conn.simple_bind_s(who=f'{self._get_user_part(login)},{self._ou}', cred=password)
         conn.unbind()
 
     def get_user_role(self, login: Login) -> Role:
-        conn = ldap.ldapobject.ReconnectLDAPObject(self._host_uri)
-        conn.simple_bind_s()
+        logging.debug('Connecting LDAP to: %s', self._host_uri)
+        conn = ldap.initialize(self._host_uri)
 
+        if self._svc_acnt:
+            logging.debug('Authenticating to LDAP as: %s', self._svc_acnt.who)
+            conn.simple_bind_s(self._svc_acnt.who, self._svc_acnt.cred)
+        else:
+            logging.debug('Running without Authentication to LDAP')
+            conn.simple_bind_s()
+
+        user_id=self._get_user_part(login)
+
+        logging.debug('Search: base = %s; filter = %s', self._base_dn, user_id)
         res = conn.search_st(self._base_dn,
                              ldap.SCOPE_SUBTREE,
-                             filterstr=self._get_user_part(login),
+                             filterstr=user_id,
                              timeout=60)
-        role = res[0]['gidNumber']
+
+        role = res[0][1][self._role_field][0].decode(self._encoding)
 
         conn.unbind()
 
