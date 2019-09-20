@@ -66,9 +66,22 @@ class LDAPUserStorage(AbstractUserService):
         return f'{self._login_field}={login}'
 
     def authenticate(self, login: Login, password: Password) -> bool:
+        result = False
         conn = ldap.initialize(self._host_uri)
-        conn.simple_bind_s(who=f'{self._get_user_part(login)},{self._ou}', cred=password)
+
+        who = f'{self._get_user_part(login)},{self._ou}'
+        logging.debug('Authenticating user %s', who)
+
+        try:
+            conn.simple_bind_s(who, cred=password)
+        except ldap.INVALID_CREDENTIALS:
+            logging.warning('Failed to authenticate user %s: invalid credentials', login)
+        else:
+            result = True
+
         conn.unbind()
+
+        return result
 
     def get_user_role(self, login: Login) -> Role:
         logging.debug('Connecting LDAP to: %s', self._host_uri)

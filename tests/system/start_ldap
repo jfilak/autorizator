@@ -1,8 +1,9 @@
 AZ_LDAP_IMG=osixia/openldap
 AZ_LDAP_CTR=company_ldap
-
+AZ_LDAP_DOMAIN=company.cz
 
 DOCKER="sudo docker"
+DOCKER_EXEC="${DOCKER} exec -i company_ldap"
 
 function stop_ldap
 {
@@ -11,12 +12,17 @@ function stop_ldap
 
 function start_ldap
 {
-    ${DOCKER} run -e LDAP_ORGANISATION="Company" -e LDAP_DOMAIN="company.cz" -e LDAP_ADMIN_PASSWORD="JonSn0w" -d --name $AZ_LDAP_CTR $AZ_LDAP_IMG
+    local LDAP_DN="dc=company,dc=cz"
+    local LDAP_ADMIN="cn=admin,${LDAP_DN}"
+    local LDAP_ADMIN_PASSWORD="JonSn0w"
+    local LDAP_ADMIN_CMD_AUTH="-x -D $LDAP_ADMIN -w $LDAP_ADMIN_PASSWORD"
 
-    sleep 3
+    ${DOCKER} run -e LDAP_ORGANISATION="Company" -e LDAP_DOMAIN=$AZ_LDAP_DOMAIN -e LDAP_ADMIN_PASSWORD=$LDAP_ADMIN_PASSWORD -d --name $AZ_LDAP_CTR $AZ_LDAP_IMG
+
+    sleep 2
 
     echo "Adding the Org. Unit People"
-    ${DOCKER} exec -i company_ldap ldapadd -x -w JonSn0w -D "cn=admin,dc=company,dc=cz" <<_EOF
+    ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
 dn: ou=People,dc=company,dc=cz
 objectClass: organizationalUnit
 ou: People
@@ -24,8 +30,8 @@ description: Users
 _EOF
 
     echo "Adding Jakub Filak"
-    ${DOCKER} exec -i company_ldap ldapadd -x -w JonSn0w -D "cn=admin,dc=company,dc=cz" <<_EOF
-dn: cn=Jakub Filak,ou=People,dc=company,dc=cz
+    ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
+dn: uid=jfilak,ou=People,dc=company,dc=cz
 cn: Jakub Filak
 objectClass: organizationalPerson
 sn: Filak
@@ -37,15 +43,12 @@ uidNumber: 4269
 _EOF
 
     echo "Setting password for Jakub Filak"
-    ${DOCKER} exec -i company_ldap ldapmodify -x -D "cn=admin,dc=company,dc=cz" -w JonSn0w <<_EOF
-dn: cn=Jakub Filak,ou=People,dc=company,dc=cz
-changetype: modify
-replace: userPassword
-userPassword: {SSHA}XLiGkBVqXHjmNuUPqDEbH6tv6fZTQzg9
-_EOF
+    ${DOCKER_EXEC} ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "uid=jfilak,ou=People,dc=company,dc=cz"
 
     echo "Searching Jakub Filak"
-    ldapsearch -x -H ldap://172.17.0.2 -b "cn=Jakub Filak,ou=People,dc=company,dc=cz" -D "cn=admin,dc=company,dc=cz" -w JonSn0w
+    ldapsearch -H ldap://172.17.0.2 -b "uid=jfilak,ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH
+
+    return
 }
 
 start_ldap
