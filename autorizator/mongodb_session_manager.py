@@ -30,7 +30,7 @@ class MongoDBSessionManger(AbstractSessionManager):
         return login
 
 
-def from_connection(host: str, database: str):
+def from_connection_string(host: str, database: str):
     """Creates an instance of MongoDB Session Manager for the give connection
        string and sets the database to the give database string.
     """

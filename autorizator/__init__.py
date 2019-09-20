@@ -10,7 +10,7 @@ import casbin.model
 from autorizator.data_types import Login, Password, SessionID, Action, ActionList
 from autorizator.user_storage import AbstractUserService, UserNotFoundError
 from autorizator.session_manager import AbstractSessionManager
-from autorizator.casbin_adapters import RoleActionPolicyList, RoleActionPolicyAdapter
+from autorizator.casbin_adapters import RoleActionPolicy, RoleActionPolicyList, RoleActionPolicyAdapter
 
 
 class Autorizator:

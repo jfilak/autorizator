@@ -5,12 +5,12 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+flake8 = "*"
+pylint = "*"
 
 [packages]
 casbin = "*"
 python-ldap = "*"
-flake8 = "*"
-pylint = "*"
 pymongo = "*"
 
 [requires]
