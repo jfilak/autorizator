@@ -1,3 +1,4 @@
+import os
 import logging
 import pytest
 
@@ -7,8 +8,12 @@ from autorizator.ldap_user_storage import LDAPUserStorage, LDAPUserAuth
 logging.basicConfig(level=logging.DEBUG)
 
 @pytest.fixture
-def us():
-    return LDAPUserStorage('ldap://172.17.0.2:389', 'People', 'company.cz',
+def ldap_hostname():
+    return os.getenv('AZ_LDAP_HOSTNAME')
+
+@pytest.fixture
+def us(ldap_hostname):
+    return LDAPUserStorage(f'ldap://{ldap_hostname}:389', 'People', 'company.cz',
                            service_account=LDAPUserAuth('cn=admin,dc=company,dc=cz', 'JonSn0w'))
 
 @pytest.fixture

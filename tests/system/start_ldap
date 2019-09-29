@@ -52,3 +52,8 @@ _EOF
 }
 
 start_ldap
+
+AZ_LDAP_HOSTNAME=$(${DOCKER} inspect ${AZ_LDAP_CTR} --format "{{ .NetworkSettings.IPAddress }}")
+export AZ_LDAP_HOSTNAME
+
+echo ">>> LDAP host: ${AZ_LDAP_HOSTNAME}"
