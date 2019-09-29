@@ -54,7 +54,7 @@ class Autorizator:
             return None
 
         session_id = uuid.uuid4()
-        return self._session_manager.create(session_id, user=login, start_date=datetime.now())
+        return self._session_manager.open(session_id, user=login)
 
     def close_session(self, session_id: SessionID):
         """Updates the give session which will no longer be usable for enumerationg
@@ -66,7 +66,7 @@ class Autorizator:
 
         # TODO: handle not found sessions
         # TODO: handle closed sessions
-        self._session_manager.update(session_id, close_date=datetime.now())
+        self._session_manager.close(session_id)
 
     def enumerate_user_actions(self, session_id: SessionID) -> ActionList:
         """Returns the list of actions available for the give session by

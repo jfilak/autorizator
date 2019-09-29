@@ -1,5 +1,7 @@
 """Autorizator sessions stored in MongoDB"""
 
+import datetime
+
 import pymongo
 
 from autorizator.data_types import SessionID, Login
@@ -13,16 +15,23 @@ class MongoDBSessionManger(AbstractSessionManager):
         self._db = db
         self._sessions = db['autorizator_sessions']
 
-    def create(self, session_id: SessionID, login: Login, **kwargs):
+    def _get_current_date(self):
+        return datetime.datetime.now()
 
-        session_data = {'id': session_id, 'login': login}
-        session_data.update(kwargs)
+    def open(self, session_id: SessionID, login: Login):
+        session_data = {
+            'id': session_id,
+            'login': login,
+            'start_date': self._get_current_date()
+        }
 
         self._sessions.insert_one(session_data)
 
-    def update(self, session_id: SessionID, **kwargs):
+    def close(self, session_id: SessionID):
 
-        self._sessions.find_one_and_update({'id': session_id}, {'$inc': kwargs})
+        end_date = {'end_date': self._get_current_date()}
+
+        self._sessions.find_one_and_update({'id': session_id}, {'$inc': end_date})
 
     def read_session_login(self, session_id: SessionID):
 

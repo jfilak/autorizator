@@ -9,14 +9,14 @@ class AbstractSessionManager(ABC):
     """Session managers deals with sessions"""
 
     @abstractmethod
-    def create(self, session_id: SessionID, login: Login, **kwargs):
-        """Creates a new session and saves the supported kwargs"""
+    def open(self, session_id: SessionID, login: Login):
+        """Creates a new session"""
 
         pass
 
     @abstractmethod
-    def update(self, session_id: SessionID, **kwargs):
-        """Updates session attributes"""
+    def close(self, session_id: SessionID):
+        """Marks the session closed"""
 
         pass
 
