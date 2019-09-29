@@ -12,6 +12,8 @@ from autorizator.user_storage import AbstractUserService
 
 
 class LDAPUserAuth(NamedTuple):
+    """User credentials in LDAP form"""
+
     who: str
     cred: str
 
@@ -19,7 +21,7 @@ class LDAPUserAuth(NamedTuple):
 class LDAPUserStorage(AbstractUserService):
     """LDAP user storage proxy"""
 
-    def __init__(self, host_uri: str, org_unit: str, domain: str, service_account: LDAPUserAuth=None):
+    def __init__(self, host_uri: str, org_unit: str, domain: str, service_account: LDAPUserAuth = None):
         """Initializes LDAP storage
 
         Args:
@@ -40,27 +42,39 @@ class LDAPUserStorage(AbstractUserService):
 
     @property
     def role_field(self):
+        """Name of the filed which holds user's role in User data"""
+
         return self._role_field
 
     @role_field.setter
     def role_field(self, value):
+        """Set name of the filed which holds user's role in User data"""
+
         self._role_field = value
 
     @property
     def login_field(self):
+        """Name of the filed which holds user's login in User data"""
+
         return self._login_field
 
     @login_field.setter
     def logine_field(self, value):
+        """Set name of the filed which holds user's login in User data"""
+
         self._login_field = value
 
     @property
     def encoding(self):
-        return self. encoding
+        """LDAP strings encoding"""
+
+        return self.encoding
 
     @encoding.setter
     def encoding(self, value):
-        self._encoding= value
+        """Set LDAP strings encoding"""
+
+        self._encoding = value
 
     def _get_user_part(self, login: Login) -> str:
         return f'{self._login_field}={login}'
@@ -94,7 +108,7 @@ class LDAPUserStorage(AbstractUserService):
             logging.debug('Running without Authentication to LDAP')
             conn.simple_bind_s()
 
-        user_id=self._get_user_part(login)
+        user_id = self._get_user_part(login)
 
         logging.debug('Search: base = %s; filter = %s', self._base_dn, user_id)
         res = conn.search_st(self._base_dn,
