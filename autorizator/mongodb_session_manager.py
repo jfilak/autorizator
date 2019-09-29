@@ -7,13 +7,16 @@ import pymongo
 from autorizator.data_types import SessionID, Login
 from autorizator.session_manager import AbstractSessionManager
 
+
 class MongoDBSessionManger(AbstractSessionManager):
     """Store sessions in MongoDB"""
 
-    def __init__(self, client, db):
+    COLLECTION = 'autorizator_sessions'
+
+    def __init__(self, client: pymongo.MongoClient, db: pymongo.database.Database):
         self._client = client
         self._db = db
-        self._sessions = db['autorizator_sessions']
+        self._sessions = db[MongoDBSessionManger.COLLECTION]
 
     def _get_current_date(self):
         return datetime.datetime.now()
@@ -31,12 +34,12 @@ class MongoDBSessionManger(AbstractSessionManager):
 
         end_date = {'end_date': self._get_current_date()}
 
-        self._sessions.find_one_and_update({'id': session_id}, {'$inc': end_date})
+        self._sessions.find_one_and_update({'id': session_id}, {'$set': end_date})
 
     def read_session_login(self, session_id: SessionID):
 
-        login = self._sessions.find_one({'id': session_id}, {'login': 0})
-        return login
+        session_data = self._sessions.find_one({'id': session_id}, {'login': 1})
+        return session_data['login']
 
 
 def from_connection_string(host: str, database: str):

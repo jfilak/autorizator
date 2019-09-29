@@ -1,0 +1,22 @@
+AZ_MONGO_IMG=mongo
+AZ_MONGO_CTR=az_mongo
+
+DOCKER="sudo docker"
+DOCKER_EXEC="${DOCKER} exec -i ${AZ_MONGO_CTR}"
+
+function stop_mongo
+{
+    ${DOCKER} rm -f ${AZ_MONGO_CTR}
+}
+
+function start_mongo
+{
+    ${DOCKER} run --name ${AZ_MONGO_CTR} -d ${AZ_MONGO_IMG}
+}
+
+start_mongo
+
+AZ_MONGO_HOSTNAME=$(${DOCKER} inspect ${AZ_MONGO_CTR} --format "{{ .NetworkSettings.IPAddress }}")
+export AZ_MONGO_HOSTNAME
+
+echo ">>> MongoDB host: ${AZ_MONGO_HOSTNAME}"
