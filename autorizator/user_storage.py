@@ -56,7 +56,7 @@ class AbstractUserService(ABC):
             found, otherwise None.
 
         Raises:
-            autorizator.userstorage.UserStorageError: An error occurred while
+            autorizator.user_storage.UserStorageError: An error occurred while
                 returning the requested user data.
         """
 

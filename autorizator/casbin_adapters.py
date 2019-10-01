@@ -1,7 +1,7 @@
 """casbin adapter"""
 
 
-from typing import List
+from typing import List, NamedTuple
 
 import casbin.persist
 
@@ -9,7 +9,7 @@ from autorizator.errors import AutorizatorError
 from autorizator.data_types import Role, RoleList, ActionList
 
 
-class RoleActionPolicy:
+class RoleActionPolicy(NamedTuple):
     """Policy definition"""
 
     role: Role
@@ -38,7 +38,7 @@ class RoleActionPolicyAdapter(casbin.persist.Adapter):
                 raise RolePolicyDefinitionError(f'The role "{policy.role}" defined twice')
 
             if policy.includes:
-                include = next((include not in know_roles for include in policy.includes), None)
+                include = next((include for include in policy.includes if include not in know_roles), None)
                 if include is not None:
                     raise RolePolicyDefinitionError(
                         f'The role "{include}" included in the role "{policy.role}" does not exist')
@@ -49,8 +49,17 @@ class RoleActionPolicyAdapter(casbin.persist.Adapter):
 
     def load_policy(self, model):
         for policy in self._policies:
-            for action in policy.actions:
-                model.model['p'][policy.role].policy.append([action])
+            if policy.includes is not None:
+                for include in policy.includes:
+                    model.model['g']['g'].policy.append([policy.role, include])
 
-            for include in policy.includes:
-                model.model['g'][policy.role].policy.append([include])
+            for action in policy.actions:
+                model.model['p']['p'].policy.append([policy.role, action])
+
+    # pylint: disable=unused-argument
+    def add_policy(self, sec, ptype, rule):
+        pass
+
+    # pylint: disable=unused-argument
+    def remove_policy(self, sec, ptype, rule):
+        pass

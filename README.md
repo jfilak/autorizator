@@ -36,6 +36,23 @@ for action in autorizator.enumerate_user_actions(session_id):
 autorizator.close_session(session_id)
 ```
 
+## Developer notes
+
+Autorizator populates Casbin Enforcer with configured roles and policies but
+without users (simply because we do not know them).
+
+Upon opening a new session and after successful authorization, Autorizator
+fetches the authorized user's role and adds the user to Casbin Enforcer.
+Autorizator does that to avoid the need to fetch user roles for every
+authorization check requests and to avoid the need to build own user roles
+cache.
+
+When a session is closed, Autorizator removes all roles of the corresponding
+user and hence all authorization requests will be refused.
+
+This approach causes that any possible changes to user roles do no take effect
+until the affected user re-authenticates themselves.
+
 ## How to test
 
 ```bash
