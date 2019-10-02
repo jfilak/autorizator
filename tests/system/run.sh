@@ -6,8 +6,7 @@
 pushd ../../
 
 export PYTHONPATH=$(pwd):$PYTHONPATH
-pipenv run python -m pytest tests/system/test_ldap.py
-pipenv run python -m pytest tests/system/test_mongo.py
+pipenv run python -m pytest tests/system/
 
 popd
 
