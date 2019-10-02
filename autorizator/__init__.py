@@ -2,7 +2,8 @@
 
 import uuid
 import logging
-from typing import Optional
+from typing import Optional, Dict
+from collections import defaultdict
 
 import casbin  # type: ignore
 import casbin.model  # type: ignore
@@ -42,6 +43,7 @@ class Autorizator:
         self._user_storage = user_storage
         self._session_manager = session_manager
         self._enforcer = _build_casbin_enforcer(policies)
+        self._user_index : Dict[str, int] = defaultdict(int)
 
     def open_session(self, login: Login, password: Password) -> Optional[SessionID]:
         """Creates a session for the given user if authentication succeeds for
@@ -67,9 +69,13 @@ class Autorizator:
         session_id = str(uuid.uuid4())
         self._session_manager.open(session_id, login)
 
-        # TODO: handle not found users
-        role = self._user_storage.get_user_role(login)
-        self._enforcer.add_role_for_user(login, role)
+        nr = self._user_index[login]
+        if nr == 0:
+            # TODO: handle not found users
+            role = self._user_storage.get_user_role(login)
+            self._enforcer.add_role_for_user(login, role)
+
+        self._user_index[login] = nr + 1
 
         return session_id
 
@@ -85,8 +91,15 @@ class Autorizator:
         # TODO: handle closed sessions
         login = self._session_manager.read_session_login(session_id)
 
-        # TODO: handle not policies - must not happen!!!
-        self._enforcer.delete_roles_for_user(login)
+        nr = self._user_index[login]
+
+        if nr == 1:
+            # TODO: handle not policies - must not happen!!!
+            self._enforcer.delete_roles_for_user(login)
+
+            del self._user_index[login]
+        else:
+            self._user_index[login] = nr - 1
 
         # TODO: handle not found sessions
         # TODO: handle closed sessions
