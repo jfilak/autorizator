@@ -5,7 +5,7 @@ LDAP server.
 from typing import NamedTuple
 import logging
 
-import ldap
+import ldap  # type: ignore
 
 from autorizator.data_types import Login, Password, Role
 from autorizator.user_storage import AbstractUserService
@@ -41,37 +41,37 @@ class LDAPUserStorage(AbstractUserService):
         self._encoding = 'utf-8'
 
     @property
-    def role_field(self):
+    def role_field(self) -> str:
         """Name of the filed which holds user's role in User data"""
 
         return self._role_field
 
     @role_field.setter
-    def role_field(self, value):
+    def role_field(self, value: str):
         """Set name of the filed which holds user's role in User data"""
 
         self._role_field = value
 
     @property
-    def login_field(self):
+    def login_field(self) -> str:
         """Name of the filed which holds user's login in User data"""
 
         return self._login_field
 
     @login_field.setter
-    def logine_field(self, value):
+    def login_field(self, value: str):
         """Set name of the filed which holds user's login in User data"""
 
         self._login_field = value
 
     @property
-    def encoding(self):
+    def encoding(self) -> str:
         """LDAP strings encoding"""
 
         return self.encoding
 
     @encoding.setter
-    def encoding(self, value):
+    def encoding(self, value: str):
         """Set LDAP strings encoding"""
 
         self._encoding = value
@@ -88,6 +88,7 @@ class LDAPUserStorage(AbstractUserService):
 
         try:
             conn.simple_bind_s(who, cred=password)
+        # pylint: disable=no-member
         except ldap.INVALID_CREDENTIALS:
             logging.warning('Failed to authenticate user %s: invalid credentials', login)
         else:
@@ -112,6 +113,7 @@ class LDAPUserStorage(AbstractUserService):
 
         logging.debug('Search: base = %s; filter = %s', self._base_dn, user_id)
         res = conn.search_st(self._base_dn,
+                             # pylint: disable=no-member
                              ldap.SCOPE_SUBTREE,
                              filterstr=user_id,
                              timeout=60)

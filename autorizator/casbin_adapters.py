@@ -1,9 +1,9 @@
 """casbin adapter"""
 
 
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Set
 
-import casbin.persist
+import casbin.persist  # type: ignore
 
 from autorizator.errors import AutorizatorError
 from autorizator.data_types import Role, RoleList, ActionList
@@ -31,7 +31,7 @@ class RoleActionPolicyAdapter(casbin.persist.Adapter):
     """The adapter"""
 
     def __init__(self, role_policies: RoleActionPolicyList):
-        know_roles = set()
+        know_roles: Set[Role] = set()
 
         for policy in role_policies:
             if policy.role in know_roles:

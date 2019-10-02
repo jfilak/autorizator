@@ -9,7 +9,10 @@ TESTS_UNIT_FILES=$(shell find $(TESTS_UNIT_DIR) -type f -name '*.py')
 
 PYTHON_BIN=pipenv run python
 
-COVERAGE_BIN=coverage3
+PYTEST_MODULE=pytest
+PYTEST_PARAMS=$(TESTS_UNIT_DIR) -vvv
+
+COVERAGE_BIN=pipenv run coverage
 COVERAGE_CMD_RUN=$(COVERAGE_BIN) run
 COVERAGE_CMD_REPORT=$(COVERAGE_BIN) report
 COVERAGE_REPORT_ARGS=--skip-covered
@@ -18,30 +21,29 @@ COVERAGE_HTML_DIR=.htmlcov
 COVERAGE_HTML_ARGS=$(COVERAGE_REPORT_ARGS) -d $(COVERAGE_HTML_DIR)
 COVERAGE_REPORT_FILES=$(PYTHON_BINARIES) $(PYTHON_MODULE_FILES)
 
-PYTEST_MODULE=pytest
-PYTEST_PARAMS=$(TESTS_UNIT_DIR) -vvv
-
 PYLINT_BIN ?= pipenv run pylint
 PYLINT_RC_FILE=.pylintrc
-PYLINT_PARAMS=--output-format=parseable --reports=no
+PYLINT_PARAMS ?= --output-format=parseable --reports=no
 
 FLAKE8_BIN ?= pipenv run flake8
 FLAKE8_CONFIG_FILE=.flake8
 FLAKE8_PARAMS=
 
+MYPY_BIN ?= pipenv run mypy
+MYPY_PARAMS=
+
 .PHONY: lint
 lint:
 	$(PYLINT_BIN) --rcfile=$(PYLINT_RC_FILE) $(PYLINT_PARAMS) $(PYTHON_MODULE)
-	PYTHONPATH=$(PYTHON_MODULE_DIR):$$PYTHONPATH $(PYLINT_BIN) --rcfile=$(PYLINT_RC_FILE) $(PYLINT_PARAMS) $(PYTHON_BINARIES)
 	$(FLAKE8_BIN) --config=$(FLAKE8_CONFIG_FILE) $(FLAKE8_PARAMS) $(PYTHON_MODULE)
-	PYTHONPATH=$(PYTHON_MODULE_DIR):$$PYTHONPATH $(FLAKE8_BIN) --config=$(FLAKE8_CONFIG_FILE) $(FLAKE8_PARAMS) $(PYTHON_BINARIES)
+	$(MYPY_BIN) $(MYPY_PARAMS) $(PYTHON_MODULE)
 
 .PHONY: test
 test:
 	$(PYTHON_BIN) -m $(PYTEST_MODULE) $(PYTEST_PARAMS)
 
 .coverage: $(COVERAGE_REPORT_FILES) $(TESTS_UNIT_FILES)
-	$(MAKE) test PYTHON_BIN="$(COVERAGE_CMD_RUN)"
+	$(MAKE) test PYTEST_PARAMS="$(PYTEST_PARAMS) --cov-report= --cov=autorizator"
 
 .PHONY: report-coverage
 report-coverage: .coverage
@@ -55,7 +57,7 @@ report-coverage-html: .coverage
 
 .PHONY: system-test
 system-test:
-	export PATH=$$(pwd):$$PATH; cd test/system && ./run.sh
+	export PATH=$$(pwd):$$PATH; cd tests/system && ./run.sh
 
 .PHONY: check
 check: lint report-coverage

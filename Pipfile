@@ -12,6 +12,9 @@ pylint = "*"
 casbin = "*"
 python-ldap = "*"
 pymongo = "*"
+mypy = "*"
+coverage = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.7"

@@ -2,7 +2,7 @@
 
 import datetime
 
-import pymongo
+import pymongo  # type: ignore
 
 from autorizator.data_types import SessionID, Login
 from autorizator.session_manager import AbstractSessionManager

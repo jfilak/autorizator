@@ -67,9 +67,7 @@ class LocalSessionManager(AbstractSessionManager):
         return session
 
     def close(self, session_id):
-        session = self._get_open_session(session_id)
-        session.open = False
-        return session.login
+        self._get_open_session(session_id).open = False
 
     def read_session_login(self, session_id):
         return self._get_open_session(session_id).login

@@ -1,16 +1,17 @@
 """Autorizator"""
 
 import uuid
-from datetime import datetime
 import logging
+from typing import Optional
 
-import casbin
-import casbin.model
+import casbin  # type: ignore
+import casbin.model  # type: ignore
 
 from autorizator.data_types import Login, Password, SessionID, Action, ActionList
 from autorizator.user_storage import AbstractUserService, UserNotFoundError
 from autorizator.session_manager import AbstractSessionManager
-from autorizator.casbin_adapters import RoleActionPolicy, RoleActionPolicyList, RoleActionPolicyAdapter
+from autorizator.casbin_adapters import RoleActionPolicy  # noqa: F401
+from autorizator.casbin_adapters import RoleActionPolicyList, RoleActionPolicyAdapter
 
 
 def _build_casbin_model():
@@ -23,6 +24,7 @@ def _build_casbin_model():
     model.add_def("m", "m", "g(r.sub, p.sub) && r.act == p.act")
 
     return model
+
 
 def _build_casbin_enforcer(policies: RoleActionPolicyList):
     policy_adapter = RoleActionPolicyAdapter(policies)
@@ -41,7 +43,7 @@ class Autorizator:
         self._session_manager = session_manager
         self._enforcer = _build_casbin_enforcer(policies)
 
-    def open_session(self, login: Login, password: Password) -> SessionID:
+    def open_session(self, login: Login, password: Password) -> Optional[SessionID]:
         """Creates a session for the given user if authentication succeeds for
         the give password.
 
@@ -62,7 +64,7 @@ class Autorizator:
             logging.warning('Failed authorization: login "%s" not found', login)
             return None
 
-        session_id = uuid.uuid4()
+        session_id = str(uuid.uuid4())
         self._session_manager.open(session_id, login)
 
         # TODO: handle not found users
@@ -81,10 +83,14 @@ class Autorizator:
 
         # TODO: handle not found sessions
         # TODO: handle closed sessions
-        login = self._session_manager.close(session_id)
+        login = self._session_manager.read_session_login(session_id)
 
         # TODO: handle not policies - must not happen!!!
         self._enforcer.delete_roles_for_user(login)
+
+        # TODO: handle not found sessions
+        # TODO: handle closed sessions
+        self._session_manager.close(session_id)
 
     def enumerate_user_actions(self, session_id: SessionID) -> ActionList:
         """Returns the list of actions available for the give session by

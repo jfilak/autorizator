@@ -60,7 +60,7 @@ class AbstractSessionManager(ABC):
         pass
 
     @abstractmethod
-    def close(self, session_id: SessionID) -> Login:
+    def close(self, session_id: SessionID):
         """Marks the session closed.
 
         Raises:
