@@ -36,7 +36,7 @@ class LDAPUserStorage(AbstractUserService):
         self._svc_acnt = service_account
         self._base_dn = ','.join((f'dc={dc}' for dc in domain.split('.')))
         self._ou = f'ou={org_unit},{self._base_dn}'
-        self._role_field = 'gidNumber'
+        self._role_field = 'employeeRole'
         self._login_field = 'uid'
         self._encoding = 'utf-8'
 

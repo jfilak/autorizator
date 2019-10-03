@@ -53,6 +53,70 @@ user and hence all authorization requests will be refused.
 This approach causes that any possible changes to user roles do no take effect
 until the affected user re-authenticates themselves.
 
+## Configuration
+
+### LDAP
+
+This section contains description of configuration for a hypothetical company
+example with the domain *example.com*. The company LDAP has organizational unit
+*staff* and stores their data in UTF-8.
+
+The Autorizator LDAP connector expects that user names are stored in
+the field *uid* and authorization uses the bind DN for the user randomjoe
+as:
+
+    uid=randomjoe,ou=staff,dc=example,dc=com
+
+The class *LDAPUserStorage* allows you to change the login filed via
+the property *login_field*. In case where you have the role stored
+in a different field and you cannot change LDAP, you can instruct Autorizator
+to read the right field.
+
+The LDAP connector expects that the user role is stored in the field *employeeRole*
+but you can overwrite the default configuration via the property *role_field*.
+
+It is also possible to change encoding from UTF-8 to your desired 
+encoding via the property *enconding*.
+
+**Example:**
+
+1. define a new objectClass with employeeRole
+
+```
+$ sudo ldapadd -Y EXTERNAL -H ldapi:/// <<_EOF
+dn: cn=employee,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: employee
+olcAttributeTypes: {0}( 1.3.6.1.4.1.42.2.27.4.1.6 NAME 'employeeRole' DESC '
+ Employee role' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcObjectClasses: {0}( 1.3.6.1.4.1.42.2.27.4.2.1 NAME 'employee' DESC 'Emplo
+ yee' SUP organizationalPerson STRUCTURAL MUST ( cn $ employeeRole ) )
+_EOF
+```
+
+We use `-Y EXTERNAL -H ldapi:///` in order to allow root user to modify
+schema because the LDAP user admin doe snot have the required rights.
+
+2. create employees with the objectClass employee
+
+```
+$ sudo ldapadd -x -W -D "cn=admin,dc=example,dc=com" <<_EOF
+dn: uid=randomjoe,ou=staff,dc=example,dc=com
+cn: Joe Random
+objectClass: organizationalPerson
+objectClass: posixAccount
+objectClass: employee
+sn: Random
+uid: randomjoe
+employeeRole: super
+_EOF
+```
+
+### MongoDB
+
+TODO
+
 ## How to test
 
 ```bash

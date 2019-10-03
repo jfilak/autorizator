@@ -26,7 +26,7 @@ def std_password():
 
 @pytest.fixture
 def std_role():
-    return '1000'
+    return 'super'
 
 def test_get_user_role_known_user(us, std_login, std_role):
     role = us.get_user_role('jfilak')

@@ -21,6 +21,28 @@ function start_ldap
 
     sleep 2
 
+    # cat test.conf | docker exec -i company_ldap tee /home/test.conf
+    # cat employee.schema | docker exec -i company_ldap tee /etc/ldap/schema/employee.schema
+    # mkdir /var/tmp/ldap.conf
+    # slaptest -f test.conf -F /var/tmp/ldap.conf/
+    # vim /var/tmp/ldap.conf/cn\=config/cn\=schema/cn\=\{4\}employee.ldif
+    # http://www.zytrax.com/books/ldap/ch6/slapd-config.html#use-schemas
+    # - remove curly braces
+    # - add the suffix ",cn=schema,cn=config" to dn:
+    # - add cn: below objectClass
+    # - remove everything after olcObjectClasses
+
+    ${DOCKER_EXEC} ldapadd -Y EXTERNAL -H ldapi:/// <<_EOF
+dn: cn=employee,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: employee
+olcAttributeTypes: {0}( 1.3.6.1.4.1.42.2.27.4.1.6 NAME 'employeeRole' DESC '
+ Employee role' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcObjectClasses: {0}( 1.3.6.1.4.1.42.2.27.4.2.1 NAME 'employee' DESC 'Emplo
+ yee' SUP organizationalPerson STRUCTURAL MUST ( cn $ employeeRole ) )
+_EOF
+
     echo "Adding the Org. Unit People"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
 dn: ou=People,dc=company,dc=cz
@@ -34,12 +56,14 @@ _EOF
 dn: uid=jfilak,ou=People,dc=company,dc=cz
 cn: Jakub Filak
 objectClass: organizationalPerson
-sn: Filak
 objectClass: posixAccount
+objectClass: employee
+sn: Filak
 uid: jfilak
 homeDirectory: /home/jfilak
 gidNumber: 1000
 uidNumber: 4269
+employeeRole: super
 _EOF
 
     echo "Setting password for Jakub Filak"
