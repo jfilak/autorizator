@@ -16,3 +16,5 @@ Password = str
 PasswordHash = str
 
 SessionID = str
+
+AuthPIN = str

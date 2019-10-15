@@ -11,11 +11,13 @@ class UserConfig():
     VIEWER_LOGIN='jfilak'
     VIEWER_PASSWORD='karel'
     VIEWER_ROLE='viewer'
+    VIEWER_PIN='42'
     VIEWER_ACTIONS=['open', 'list']
 
     SUPER_LOGIN='kalifj'
     SUPER_PASSWORD='lerak'
     SUPER_ROLE='super'
+    SUPER_PIN='69'
     SUPER_ACTIONS=['add', 'remove']
 
 
@@ -27,6 +29,10 @@ class LocalUserStorage(AbstractUserService):
                     UserConfig.SUPER_LOGIN: UserConfig.SUPER_PASSWORD}[login] == password
         except KeyError:
             raise autorizator.user_storage.UserNotFoundError()
+
+    def find_user_by_pin(self, pin):
+        return {UserConfig.VIEWER_PIN: UserConfig.VIEWER_LOGIN,
+                UserConfig.SUPER_PIN: UserConfig.SUPER_LOGIN}.get(pin, None)
 
     def get_user_role(self, login):
         try:

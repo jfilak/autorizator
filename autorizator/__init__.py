@@ -8,7 +8,7 @@ from collections import defaultdict
 import casbin  # type: ignore
 import casbin.model  # type: ignore
 
-from autorizator.data_types import Login, Password, SessionID, Action, ActionList
+from autorizator.data_types import Login, Password, SessionID, Action, ActionList, AuthPIN
 from autorizator.user_storage import AbstractUserService, UserNotFoundError
 from autorizator.session_manager import AbstractSessionManager
 from autorizator.casbin_adapters import RoleActionPolicy  # noqa: F401
@@ -43,7 +43,21 @@ class Autorizator:
         self._user_storage = user_storage
         self._session_manager = session_manager
         self._enforcer = _build_casbin_enforcer(policies)
-        self._user_index : Dict[str, int] = defaultdict(int)
+        self._user_index: Dict[str, int] = defaultdict(int)
+
+    def _create_session_for_login(self, login: Login):
+        session_id = str(uuid.uuid4())
+        self._session_manager.open(session_id, login)
+
+        nr = self._user_index[login]
+        if nr == 0:
+            # TODO: handle not found users
+            role = self._user_storage.get_user_role(login)
+            self._enforcer.add_role_for_user(login, role)
+
+        self._user_index[login] = nr + 1
+
+        return session_id
 
     def open_session(self, login: Login, password: Password) -> Optional[SessionID]:
         """Creates a session for the given user if authentication succeeds for
@@ -66,18 +80,25 @@ class Autorizator:
             logging.warning('Failed authorization: login "%s" not found', login)
             return None
 
-        session_id = str(uuid.uuid4())
-        self._session_manager.open(session_id, login)
+        return self._create_session_for_login(login)
 
-        nr = self._user_index[login]
-        if nr == 0:
-            # TODO: handle not found users
-            role = self._user_storage.get_user_role(login)
-            self._enforcer.add_role_for_user(login, role)
+    def open_session_with_pin(self, pin: AuthPIN) -> Optional[SessionID]:
+        """Creates a session if it is possible to find a single user with the
+        give PIN assigned in the user storage.
 
-        self._user_index[login] = nr + 1
+        Args:
+            pin: Secret User Identifier
 
-        return session_id
+        Returns:
+            A unique Session Identifier is returned if authentication succeeds,
+            otherwise None is returned.
+        """
+
+        login = self._user_storage.find_user_by_pin(pin)
+        if login is None:
+            return None
+
+        return self._create_session_for_login(login)
 
     def close_session(self, session_id: SessionID):
         """Updates the give session which will no longer be usable for enumerationg

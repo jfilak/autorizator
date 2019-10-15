@@ -36,6 +36,14 @@ for action in autorizator.enumerate_user_actions(session_id):
 autorizator.close_session(session_id)
 ```
 
+It is also possible to authorize user using a secret value (PIN) known only to
+the authorized user without providing login - this actually means that
+the configured user storage must not contain duplicate PINs.
+
+```python
+session_id = autorizator.open_session_with_pin('197001010000')
+```
+
 ## Developer notes
 
 Autorizator populates Casbin Enforcer with configured roles and policies but
@@ -72,26 +80,33 @@ the property *login_field*. In case where you have the role stored
 in a different field and you cannot change LDAP, you can instruct Autorizator
 to read the right field.
 
-The LDAP connector expects that the user role is stored in the field *employeeRole*
-but you can overwrite the default configuration via the property *role_field*.
+The LDAP connector expects that:
+
+- the user role is stored in the field *employeeRole* but you can overwrite the
+  default configuration via the property *role_field*.
+
+- the user Authentication PIN is stored in the field *employeePIN*
+  but you can overwrite the default configuration via the property *pin_field*.
 
 It is also possible to change encoding from UTF-8 to your desired 
 encoding via the property *enconding*.
 
 **Example:**
 
-1. define a new objectClass with employeeRole
+1. define a new objectClass with employeeRole and employeePIN
 
 ```
 $ sudo ldapadd -Y EXTERNAL -H ldapi:/// <<_EOF
 dn: cn=employee,cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: employee
-olcAttributeTypes: {0}( 1.3.6.1.4.1.42.2.27.4.1.6 NAME 'employeeRole' DESC '
- Employee role' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
-  SINGLE-VALUE )
-olcObjectClasses: {0}( 1.3.6.1.4.1.42.2.27.4.2.1 NAME 'employee' DESC 'Emplo
- yee' SUP organizationalPerson STRUCTURAL MUST ( cn $ employeeRole ) )
+olcAttributeTypes: ( 1.1.2.1.1 NAME 'employeeRole' DESC 'Employee role' E
+ QUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
+olcAttributeTypes: ( 1.1.2.1.2 NAME 'employeePIN' DESC 'Employee Authenti
+ cation PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SI
+ NGLE-VALUE )
+olcObjectClasses: ( 1.1.2.2.1 NAME 'Employee' DESC 'Employee' SUP organiz
+ ationalPerson STRUCTURAL MUST ( cn $ employeeRole $ employeePIN ) )
 _EOF
 ```
 
@@ -110,6 +125,7 @@ objectClass: employee
 sn: Random
 uid: randomjoe
 employeeRole: super
+employeePIN: Y2K38
 _EOF
 ```
 
@@ -119,41 +135,4 @@ TODO
 
 ## How to test
 
-```bash
-docker pull osixia/openldap
-
-docker run -e LDAP_ORGANISATION="Company" -e LDAP_DOMAIN="company.cz" -e LDAP_ADMIN_PASSWORD="JonSn0w" -d --name company_ldap osixia/openldap
-
-docker exec -it company_ldap slapcat -n 0
-
-cd /var/tmp
-
-cat > ou_users.ldiff <<_EOF
-dn: ou=People,dc=company,dc=cz
-objectClass: organizationalUnit
-ou: People
-description: Users
-_EOF
-
-cat ou_users.ldif | docker exec -i company_ldap ldapadd -x -w JonSn0w -D "cn=admin,dc=company,dc=cz"
-
-cat > op_jfilak.ldiff <<_EOF
-dn: uid=jfilak,ou=People,dc=company,dc=cz
-cn: Jakub Filak
-objectClass: organizationalPerson
-sn: Filak
-objectClass: posixAccount
-uid: jfilak
-homeDirectory: /home/jfilak
-gidNumber: 1000
-uidNumber: 4269
-_EOF
-
-cat op_jfilak.ldif | docker exec -i company_ldap ldapadd -x -w JonSn0w -D "cn=admin,dc=company,dc=cz"
-
-docker exec -i company_ldap ldapsearch -x -H ldap://localhost -b "uid=jfilak,ou=People,dc=company,dc=cz" -D "cn=admin,dc=company,dc=cz" -w JonSn0w
-
-docker exec -i company_ldap ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "uid=jfilak,ou=People,dc=company,dc=cz"
-
-ldapsearch -x -H ldap://172.17.0.2 -b "uid=jfilak,ou=People,dc=company,dc=cz" -D "cn=admin,dc=company,dc=cz" -w JonSn0w
-```
+Please, read the script [start_ldap](tests/system/start_ldap)

@@ -38,11 +38,13 @@ function start_ldap
 dn: cn=employee,cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: employee
-olcAttributeTypes: {0}( 1.3.6.1.4.1.42.2.27.4.1.6 NAME 'employeeRole' DESC '
- Employee role' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
-  SINGLE-VALUE )
-olcObjectClasses: {0}( 1.3.6.1.4.1.42.2.27.4.2.1 NAME 'employee' DESC 'Emplo
- yee' SUP organizationalPerson STRUCTURAL MUST ( cn $ employeeRole ) )
+olcAttributeTypes: ( 1.1.2.1.1 NAME 'employeeRole' DESC 'Employee role' E
+ QUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
+olcAttributeTypes: ( 1.1.2.1.2 NAME 'employeePIN' DESC 'Employee Authenti
+ cation PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SI
+ NGLE-VALUE )
+olcObjectClasses: ( 1.1.2.2.1 NAME 'Employee' DESC 'Employee' SUP organiz
+ ationalPerson STRUCTURAL MUST ( cn $ employeeRole $ employeePIN ) )
 _EOF
     echo "---- DONE"
 
@@ -68,6 +70,7 @@ homeDirectory: /home/jfilak
 gidNumber: 1000
 uidNumber: 4269
 employeeRole: super
+employeePIN: 1969
 _EOF
     echo "---- DONE"
 
@@ -77,6 +80,10 @@ _EOF
 
     echo ":::: Retrieve Jakub Filak data by DN"
     ldapsearch -H ldap://172.17.0.2 -b "uid=jfilak,ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH
+    echo "---- DONE"
+
+    echo ":::: Find user login by Authentication PIN"
+    ldapsearch -H ldap://172.17.0.2 -b "ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(employeePIN=1969)" uid
     echo "---- DONE"
 
     return
