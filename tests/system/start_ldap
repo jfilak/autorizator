@@ -23,9 +23,10 @@ function start_ldap
 
     # cat test.conf | docker exec -i company_ldap tee /home/test.conf
     # cat employee.schema | docker exec -i company_ldap tee /etc/ldap/schema/employee.schema
+    # docker exec -it company_ldap bash
     # mkdir /var/tmp/ldap.conf
-    # slaptest -f test.conf -F /var/tmp/ldap.conf/
-    # vim /var/tmp/ldap.conf/cn\=config/cn\=schema/cn\=\{4\}employee.ldif
+    # slaptest -f /home/test.conf -F /var/tmp/ldap.conf/
+    # cat /var/tmp/ldap.conf/cn\=config/cn\=schema/cn\=\{4\}employee.ldif
     # http://www.zytrax.com/books/ldap/ch6/slapd-config.html#use-schemas
     # - remove curly braces
     # - add the suffix ",cn=schema,cn=config" to dn:
