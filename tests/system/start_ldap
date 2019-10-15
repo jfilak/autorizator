@@ -32,6 +32,7 @@ function start_ldap
     # - add cn: below objectClass
     # - remove everything after olcObjectClasses
 
+    echo ":::: Extending Schema with the class employee"
     ${DOCKER_EXEC} ldapadd -Y EXTERNAL -H ldapi:/// <<_EOF
 dn: cn=employee,cn=schema,cn=config
 objectClass: olcSchemaConfig
@@ -42,16 +43,18 @@ olcAttributeTypes: {0}( 1.3.6.1.4.1.42.2.27.4.1.6 NAME 'employeeRole' DESC '
 olcObjectClasses: {0}( 1.3.6.1.4.1.42.2.27.4.2.1 NAME 'employee' DESC 'Emplo
  yee' SUP organizationalPerson STRUCTURAL MUST ( cn $ employeeRole ) )
 _EOF
+    echo "---- DONE"
 
-    echo "Adding the Org. Unit People"
+    echo ":::: Adding the Org. Unit People"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
 dn: ou=People,dc=company,dc=cz
 objectClass: organizationalUnit
 ou: People
 description: Users
 _EOF
+    echo "---- DONE"
 
-    echo "Adding Jakub Filak"
+    echo ":::: Adding Jakub Filak"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
 dn: uid=jfilak,ou=People,dc=company,dc=cz
 cn: Jakub Filak
@@ -65,12 +68,15 @@ gidNumber: 1000
 uidNumber: 4269
 employeeRole: super
 _EOF
+    echo "---- DONE"
 
-    echo "Setting password for Jakub Filak"
+    echo ":::: Setting password for Jakub Filak"
     ${DOCKER_EXEC} ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "uid=jfilak,ou=People,dc=company,dc=cz"
+    echo "---- DONE"
 
-    echo "Searching Jakub Filak"
+    echo ":::: Retrieve Jakub Filak data by DN"
     ldapsearch -H ldap://172.17.0.2 -b "uid=jfilak,ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH
+    echo "---- DONE"
 
     return
 }
