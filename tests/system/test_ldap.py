@@ -2,6 +2,7 @@ import os
 import logging
 import pytest
 
+from autorizator.user_storage import UserStorageError
 from autorizator.ldap_user_storage import LDAPUserStorage, LDAPUserAuth
 
 
@@ -39,6 +40,10 @@ def std_role():
 def test_get_user_role_known_user(us, std_login, std_role):
     role = us.get_user_role('jfilak')
     assert role == std_role
+
+def test_get_user_role_UNknown_user(us, std_login, std_role):
+    with pytest.raises(UserStorageError):
+        role = us.get_user_role('pedro')
 
 def test_get_user_login_by_pin(us, std_login, std_pin):
     login = us.find_user_by_pin(std_pin)

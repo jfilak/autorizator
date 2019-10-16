@@ -8,7 +8,7 @@ import logging
 import ldap  # type: ignore
 
 from autorizator.data_types import Login, Password, Role, AuthPIN
-from autorizator.user_storage import AbstractUserService
+from autorizator.user_storage import AbstractUserService, UserStorageError
 
 
 class LDAPUserAuth(NamedTuple):
@@ -199,6 +199,9 @@ class LDAPUserStorage(AbstractUserService):
                                                     self._base_dn,
                                                     user_id,
                                                     self.role_field)
+
+            if res is None:
+                raise UserStorageError('User was not found or login is not unique')
 
             role = res[0].decode(self.encoding)
 
