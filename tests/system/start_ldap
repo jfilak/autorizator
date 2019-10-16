@@ -74,6 +74,40 @@ employeePIN: 1969
 _EOF
     echo "---- DONE"
 
+    echo ":::: Adding Evil Twin - PIN 6666"
+    ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
+dn: uid=evil,ou=People,dc=company,dc=cz
+cn: Evil Twin
+objectClass: organizationalPerson
+objectClass: posixAccount
+objectClass: employee
+sn: Twin
+uid: evil
+homeDirectory: /home/evil
+gidNumber: 6666
+uidNumber: 4269
+employeeRole: viewer
+employeePIN: 6666
+_EOF
+    echo "---- DONE"
+
+    echo ":::: Adding Gabriel Angel - PIN 6666 (intentional duplicate)"
+    ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
+dn: uid=gabo,ou=People,dc=company,dc=cz
+cn: Gabriel Angel
+objectClass: organizationalPerson
+objectClass: posixAccount
+objectClass: employee
+sn: Angel
+uid: gabo
+homeDirectory: /home/gabo
+gidNumber: 6666
+uidNumber: 4242
+employeeRole: super
+employeePIN: 6666
+_EOF
+    echo "---- DONE"
+
     echo ":::: Setting password for Jakub Filak"
     ${DOCKER_EXEC} ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "uid=jfilak,ou=People,dc=company,dc=cz"
     echo "---- DONE"
@@ -84,6 +118,10 @@ _EOF
 
     echo ":::: Find user login by Authentication PIN"
     ldapsearch -H ldap://172.17.0.2 -b "ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(employeePIN=1969)" uid
+    echo "---- DONE"
+
+    echo ":::: Find user login by Authentication PIN - duplicates"
+    ldapsearch -H ldap://172.17.0.2 -b "ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(employeePIN=6666)" uid
     echo "---- DONE"
 
     return

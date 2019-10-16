@@ -25,6 +25,10 @@ def std_pin():
     return '1969'
 
 @pytest.fixture
+def std_pin_duplicates():
+    return '6666'
+
+@pytest.fixture
 def std_password():
     return 'Karel'
 
@@ -42,6 +46,10 @@ def test_get_user_login_by_pin(us, std_login, std_pin):
 
 def test_get_user_login_by_bin_unknown(us, std_pin):
     login = us.find_user_by_pin('20380191031408')
+    assert login is None
+
+def test_get_user_login_by_pin_duplicate(us, std_pin_duplicates):
+    login = us.find_user_by_pin(std_pin_duplicates)
     assert login is None
 
 def test_authenticate_valid_password(us, std_login, std_password):
