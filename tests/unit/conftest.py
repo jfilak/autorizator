@@ -2,7 +2,7 @@ import pytest
 from collections import namedtuple
 
 from autorizator import RoleActionPolicy
-from autorizator.user_storage import AbstractUserService, UserNotFoundError, UserStorageError
+from autorizator.user_storage import AbstractUserService, UserStorageError
 from autorizator.session_manager import AbstractSessionManager, SessionAlreadyExists, SessionNotFound, SessionIsClosed
 
 
@@ -28,7 +28,7 @@ class LocalUserStorage(AbstractUserService):
             return {UserConfig.VIEWER_LOGIN: UserConfig.VIEWER_PASSWORD,
                     UserConfig.SUPER_LOGIN: UserConfig.SUPER_PASSWORD}[login] == password
         except KeyError:
-            raise autorizator.user_storage.UserNotFoundError()
+            raise UserStorageError('Not found')
 
     def find_user_by_pin(self, pin):
         return {UserConfig.VIEWER_PIN: UserConfig.VIEWER_LOGIN,
@@ -39,7 +39,7 @@ class LocalUserStorage(AbstractUserService):
             return {UserConfig.VIEWER_LOGIN: UserConfig.VIEWER_ROLE,
                     UserConfig.SUPER_LOGIN: UserConfig.SUPER_ROLE}[login]
         except KeyError:
-            raise autorizator.user_storage.UserStorageError()
+            raise UserStorageError()
 
 
 class LocalSessionManager(AbstractSessionManager):

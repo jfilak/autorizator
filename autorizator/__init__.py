@@ -9,7 +9,7 @@ import casbin  # type: ignore
 import casbin.model  # type: ignore
 
 from autorizator.data_types import Login, Password, SessionID, Action, ActionList, AuthPIN
-from autorizator.user_storage import AbstractUserService, UserNotFoundError
+from autorizator.user_storage import AbstractUserService, UserStorageError
 from autorizator.session_manager import AbstractSessionManager
 from autorizator.casbin_adapters import RoleActionPolicy  # noqa: F401
 from autorizator.casbin_adapters import RoleActionPolicyList, RoleActionPolicyAdapter
@@ -51,9 +51,13 @@ class Autorizator:
 
         nr = self._user_index[login]
         if nr == 0:
-            # TODO: handle not found users
-            role = self._user_storage.get_user_role(login)
-            self._enforcer.add_role_for_user(login, role)
+            try:
+                role = self._user_storage.get_user_role(login)
+            except UserStorageError as ex:
+                logging.warning('Could not get role of login "%s": %s', login, str(ex))
+                return None
+            else:
+                self._enforcer.add_role_for_user(login, role)
 
         self._user_index[login] = nr + 1
 
@@ -74,10 +78,10 @@ class Autorizator:
 
         try:
             if not self._user_storage.authenticate(login, password):
-                logging.warning('Failed authorization: login "%s" wrong password', login)
+                logging.warning('Failed authorization: login "%s" invalid credentials', login)
                 return None
-        except UserNotFoundError:
-            logging.warning('Failed authorization: login "%s" not found', login)
+        except UserStorageError as ex:
+            logging.warning('An error occurred during authorization of login "%s" : %s', login, str(ex))
             return None
 
         return self._create_session_for_login(login)

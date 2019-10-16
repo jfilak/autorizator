@@ -14,12 +14,6 @@ class UserStorageError(AutorizatorError):
     pass
 
 
-class UserNotFoundError(AutorizatorError):
-    """The requested user was not found"""
-
-    pass
-
-
 class AbstractUserService(ABC):
     """Base class defining the interface of User Storage.
 
@@ -40,7 +34,8 @@ class AbstractUserService(ABC):
             True if user authentication succeeds, otherwise False.
 
         Raises:
-            autorizator.user_storage.UserNotFoundError: If the user was not found.
+            autorizator.user_storage.UserStorageError: If the user was not
+               found.
         """
 
         raise NotImplementedError()
