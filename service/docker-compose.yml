@@ -1,0 +1,32 @@
+version: '3'
+services:
+
+  ldap:
+    image: docker.io/osixia/openldap:1.3.0
+    hostname: ldap-host
+    command: --copy-service
+    env_file:
+    - ldap-service-variables.env
+    volumes:
+    - ./ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    - ldapetc:/etc/ldap/slapd.d
+    - ldapvar:/var/lib/ldap
+    networks:
+      ldapnet:
+        aliases:
+        - ldap-host
+
+  phpldapadmin:
+    image: docker.io/osixia/phpldapadmin:0.9.0
+    hostname: phpldapadmin-host
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap-host
+    networks:
+    - ldapnet
+
+volumes:
+  ldapetc:
+  ldapvar:
+
+networks:
+  ldapnet:

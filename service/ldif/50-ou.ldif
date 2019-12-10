@@ -1,0 +1,4 @@
+dn: ou=Employees,{{ LDAP_BASE_DN }}
+objectClass: organizationalUnit
+ou: Employees
+description: Employees

@@ -1,0 +1,10 @@
+dn: cn=employee,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: employee
+olcAttributeTypes: ( 1.1.2.1.1 NAME 'employeeRole' DESC 'Employee role' E
+ QUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
+olcAttributeTypes: ( 1.1.2.1.2 NAME 'employeePIN' DESC 'Employee Authenti
+ cation PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SI
+ NGLE-VALUE )
+olcObjectClasses: ( 1.1.2.2.1 NAME 'Employee' DESC 'Employee' SUP organiz
+ ationalPerson STRUCTURAL MUST ( cn $ employeeRole $ employeePIN ) )
