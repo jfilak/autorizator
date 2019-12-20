@@ -15,6 +15,6 @@ attributetype ( 1.1.2.1.2
 objectclass ( 1.1.2.2.1
         NAME 'ClassIndustrialVision'
         DESC 'Indistrial Vision User'
-        SUP organizationalPerson
+        SUP inetOrgPerson
         STRUCTURAL
         MUST ( cn $ IVisionRole $ IVisionPIN ) )

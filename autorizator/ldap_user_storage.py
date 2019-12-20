@@ -79,7 +79,7 @@ class LDAPUserStorageConfig:
     def __init__(self):
         self.role_field = 'IVisionRole'
         self.pin_field = 'IVisionPIN'
-        self.login_field = 'uid'
+        self.login_field = 'cn'
         self.encoding = 'utf-8'
 
 

@@ -8,5 +8,5 @@ olcAttributeTypes: ( 1.1.2.1.2 NAME 'IVisionPIN' DESC 'Industrial Vision
  user PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SING
  LE-VALUE )
 olcObjectClasses: ( 1.1.2.2.1 NAME 'ClassIndustrialVision' DESC 'Indistri
- al Vision User' SUP organizationalPerson STRUCTURAL MUST ( cn $ IVisionRole
-  $ IVisionPIN ) )
+ al Vision User' SUP inetOrgPerson STRUCTURAL MUST ( cn $ IVisionRole $ IVis
+ ionPIN ) )

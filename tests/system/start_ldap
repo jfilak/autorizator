@@ -50,16 +50,11 @@ function start_ldap
     echo
     echo ":::: Adding Jakub Filak"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
-dn: uid=jfilak,ou=IVisionUsers,dc=company,dc=cz
-cn: Jakub Filak
-objectClass: organizationalPerson
-objectClass: posixAccount
+dn: cn=jfilak,ou=IVisionUsers,dc=company,dc=cz
+cn: jfilak
 objectClass: ClassIndustrialVision
+givenName: Jakub
 sn: Filak
-uid: jfilak
-homeDirectory: /home/jfilak
-gidNumber: 1000
-uidNumber: 4269
 IVisionRole: super
 IVisionPIN: 1969
 _EOF
@@ -67,16 +62,11 @@ _EOF
 
     echo ":::: Adding Evil Twin - PIN 6666"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
-dn: uid=evil,ou=IVisionUsers,dc=company,dc=cz
-cn: Evil Twin
-objectClass: organizationalPerson
-objectClass: posixAccount
+dn: cn=evil,ou=IVisionUsers,dc=company,dc=cz
+cn: evil
 objectClass: ClassIndustrialVision
+givenName: Evil
 sn: Twin
-uid: evil
-homeDirectory: /home/evil
-gidNumber: 6666
-uidNumber: 4269
 IVisionRole: viewer
 IVisionPIN: 6666
 _EOF
@@ -84,35 +74,30 @@ _EOF
 
     echo ":::: Adding Gabriel Angel - PIN 6666 (intentional duplicate)"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
-dn: uid=gabo,ou=IVisionUsers,dc=company,dc=cz
-cn: Gabriel Angel
-objectClass: organizationalPerson
-objectClass: posixAccount
+dn: cn=gabo,ou=IVisionUsers,dc=company,dc=cz
+cn: gabo
 objectClass: ClassIndustrialVision
+givenName: Gabriel
 sn: Angel
-uid: gabo
-homeDirectory: /home/gabo
-gidNumber: 6666
-uidNumber: 4242
 IVisionRole: super
 IVisionPIN: 6666
 _EOF
     echo "---- DONE"
 
     echo ":::: Setting password for Jakub Filak"
-    ${DOCKER_EXEC} ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "uid=jfilak,ou=IVisionUsers,dc=company,dc=cz"
+    ${DOCKER_EXEC} ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "cn=jfilak,ou=IVisionUsers,dc=company,dc=cz"
     echo "---- DONE"
 
     echo ":::: Retrieve Jakub Filak data by DN"
-    ldapsearch -H ldap://172.17.0.2 -b "uid=jfilak,ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH
+    ldapsearch -H ldap://172.17.0.2 -b "cn=jfilak,ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH
     echo "---- DONE"
 
     echo ":::: Find user login by Authentication PIN"
-    ldapsearch -H ldap://172.17.0.2 -b "ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(IVisionPIN=1969)" uid
+    ldapsearch -H ldap://172.17.0.2 -b "ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(IVisionPIN=1969)" cn
     echo "---- DONE"
 
     echo ":::: Find user login by Authentication PIN - duplicates"
-    ldapsearch -H ldap://172.17.0.2 -b "ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(IVisionPIN=6666)" uid
+    ldapsearch -H ldap://172.17.0.2 -b "ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(IVisionPIN=6666)" cn
     echo "---- DONE"
 
     return
@@ -122,5 +107,4 @@ start_ldap
 
 AZ_LDAP_HOSTNAME=$(${DOCKER} inspect ${AZ_LDAP_CTR} --format "{{ .NetworkSettings.IPAddress }}")
 export AZ_LDAP_HOSTNAME
-
 echo ">>> LDAP host: ${AZ_LDAP_HOSTNAME}"

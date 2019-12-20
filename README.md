@@ -108,8 +108,8 @@ olcAttributeTypes: ( 1.1.2.1.2 NAME 'IVisionPIN' DESC 'Industrial Vision
  user PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SING
  LE-VALUE )
 olcObjectClasses: ( 1.1.2.2.1 NAME 'ClassIndustrialVision' DESC 'Indistri
- al Vision User' SUP organizationalPerson STRUCTURAL MUST ( cn $ IVisionRole
-  $ IVisionPIN ) )
+ al Vision User' SUP inetOrgPerson STRUCTURAL MUST ( cn $ IVisionRole $ IVis
+ ionPIN ) )
 _EOF
 ```
 
@@ -128,17 +128,15 @@ description: Industrial Vision Users
 _EOF
 ```
 
-3. create employees with the objectClass employee
+3. create employees with the objectClass ClassIndustrialVision
 
 ```
 $ sudo ldapadd -x -W -D "cn=admin,dc=example,dc=com" <<_EOF
-dn: uid=randomjoe,ou=IVisionUsers,dc=example,dc=com
-cn: Joe Random
-objectClass: organizationalPerson
-objectClass: posixAccount
+dn: cn=randomjoe,ou=IVisionUsers,dc=example,dc=com
+cn: randomjoe
 objectClass: ClassIndustrialVision
+givenName: Joe
 sn: Random
-uid: randomjoe
 IVisionRole: super
 IVisionPIN: Y2K38
 _EOF
