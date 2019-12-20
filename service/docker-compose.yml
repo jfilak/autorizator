@@ -21,6 +21,7 @@ services:
     hostname: phpldapadmin-host
     environment:
       PHPLDAPADMIN_LDAP_HOSTS: ldap-host
+      PHPLDAPADMIN_HTTPS: "false"
     networks:
     - ldapnet
 

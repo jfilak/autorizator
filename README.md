@@ -82,10 +82,10 @@ to read the right field.
 
 The LDAP connector expects that:
 
-- the user role is stored in the field *employeeRole* but you can overwrite the
+- the user role is stored in the field *IVisionRole* but you can overwrite the
   default configuration via the property *role_field*.
 
-- the user Authentication PIN is stored in the field *employeePIN*
+- the user Authentication PIN is stored in the field *IVisionPIN*
   but you can overwrite the default configuration via the property *pin_field*.
 
 It is also possible to change encoding from UTF-8 to your desired 
@@ -93,39 +93,54 @@ encoding via the property *enconding*.
 
 **Example:**
 
-1. define a new objectClass with employeeRole and employeePIN
+1. define a new objectClass named ClassIndustrialVision with IVisionRole and
+   IVisionPIN
 
 ```
 $ sudo ldapadd -Y EXTERNAL -H ldapi:/// <<_EOF
-dn: cn=employee,cn=schema,cn=config
+dn: cn=industrialvisionuser,cn=schema,cn=config
 objectClass: olcSchemaConfig
-cn: employee
-olcAttributeTypes: ( 1.1.2.1.1 NAME 'employeeRole' DESC 'Employee role' E
- QUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
-olcAttributeTypes: ( 1.1.2.1.2 NAME 'employeePIN' DESC 'Employee Authenti
- cation PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SI
- NGLE-VALUE )
-olcObjectClasses: ( 1.1.2.2.1 NAME 'Employee' DESC 'Employee' SUP organiz
- ationalPerson STRUCTURAL MUST ( cn $ employeeRole $ employeePIN ) )
+cn: industrialvisionuser
+olcAttributeTypes: ( 1.1.2.1.1 NAME 'IVisionRole' DESC 'Industrial Vison 
+ user role' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SIN
+ GLE-VALUE )
+olcAttributeTypes: ( 1.1.2.1.2 NAME 'IVisionPIN' DESC 'Industrial Vision 
+ user PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SING
+ LE-VALUE )
+olcObjectClasses: ( 1.1.2.2.1 NAME 'ClassIndustrialVision' DESC 'Indistri
+ al Vision User' SUP organizationalPerson STRUCTURAL MUST ( cn $ IVisionRole
+  $ IVisionPIN ) )
 _EOF
 ```
 
 We use `-Y EXTERNAL -H ldapi:///` in order to allow root user to modify
 schema because the LDAP user admin doe snot have the required rights.
 
-2. create employees with the objectClass employee
+2. add a new organizational unit called IVisionUsers, where the user data will
+   be stored:
+
+```
+$ sudo ldapadd -x -W -D "cn=admin,dc=example,dc=com" <<<_EOF
+dn: ou=IVisionUsers,dc=example,dc=com
+objectClass: organizationalUnit
+ou: IVisionUsers
+description: Industrial Vision Users
+_EOF
+```
+
+3. create employees with the objectClass employee
 
 ```
 $ sudo ldapadd -x -W -D "cn=admin,dc=example,dc=com" <<_EOF
-dn: uid=randomjoe,ou=staff,dc=example,dc=com
+dn: uid=randomjoe,ou=IVisionUsers,dc=example,dc=com
 cn: Joe Random
 objectClass: organizationalPerson
 objectClass: posixAccount
-objectClass: employee
+objectClass: ClassIndustrialVision
 sn: Random
 uid: randomjoe
-employeeRole: super
-employeePIN: Y2K38
+IVisionRole: super
+IVisionPIN: Y2K38
 _EOF
 ```
 
@@ -136,3 +151,28 @@ TODO
 ## How to test
 
 Please, read the script [start_ldap](tests/system/start_ldap)
+
+## How to deploy
+
+The directory [service](service) contains [a configuration file](service/docker-compose.yml)
+for [docker-compose](https://docs.docker.com/compose/)/.
+
+If you don't need to change any names, you can use the command
+`docker-compose up` which will bring up 2 containers:
+
+- service_ldap_1 (the LDAP service)
+- service_phpldapadmin_1 (administration UI)
+
+Before issuing the up command, please, fill variables in
+the file [ldap-service-variables.env](service/ldap-service-variables.env)
+
+### LDAP Administration
+
+You need to get IP of the phpldapadmin-host with the command:
+
+```bash
+sudo docker inspect --format '{{ .NetworkSettings.Networks.service_ldapnet.IPAddress }}' service_phpldapadmin_1
+```
+
+the you have to open `http://$CONTAINER_IP/` in your browser and login as `cn=admin,dn=example,dn=com`
+(replace `dn=example,dn=com` with your domain configured in the file [ldap-service-variables.env](service/ldap-service-variables.env))

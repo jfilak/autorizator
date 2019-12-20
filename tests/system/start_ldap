@@ -1,127 +1,118 @@
 AZ_LDAP_IMG=osixia/openldap
-AZ_LDAP_CTR=company_ldap
+AZ_LDAP_CTR=ldap-service
 AZ_LDAP_DOMAIN=company.cz
 
+AZ_LDIF_HOME=../../service/ldif
+
 DOCKER="sudo docker"
-DOCKER_EXEC="${DOCKER} exec -i company_ldap"
+DOCKER_EXEC="${DOCKER} exec -i $AZ_LDAP_CTR"
 
 function stop_ldap
 {
-    ${DOCKER} rm -f company_ldap
+    ${DOCKER} rm -f $AZ_LDAP_CTR
 }
 
 function start_ldap
 {
+    local LDAP_ORGANISATION=Company
     local LDAP_DN="dc=company,dc=cz"
     local LDAP_ADMIN="cn=admin,${LDAP_DN}"
     local LDAP_ADMIN_PASSWORD="JonSn0w"
     local LDAP_ADMIN_CMD_AUTH="-x -D $LDAP_ADMIN -w $LDAP_ADMIN_PASSWORD"
 
-    ${DOCKER} run -e LDAP_ORGANISATION="Company" -e LDAP_DOMAIN=$AZ_LDAP_DOMAIN -e LDAP_ADMIN_PASSWORD=$LDAP_ADMIN_PASSWORD -d --name $AZ_LDAP_CTR $AZ_LDAP_IMG
+    ${DOCKER} run -e LDAP_ORGANISATION="$LDAP_ORGANISATION" -e LDAP_DOMAIN=$AZ_LDAP_DOMAIN -e LDAP_ADMIN_PASSWORD=$LDAP_ADMIN_PASSWORD --hostname $AZ_LDAP_CTR -d --name $AZ_LDAP_CTR $AZ_LDAP_IMG
 
-    sleep 2
+    sleep 5
 
-    # cat test.conf | docker exec -i company_ldap tee /home/test.conf
-    # cat employee.schema | docker exec -i company_ldap tee /etc/ldap/schema/employee.schema
-    # docker exec -it company_ldap bash
-    # mkdir /var/tmp/ldap.conf
-    # slaptest -f /home/test.conf -F /var/tmp/ldap.conf/
-    # cat /var/tmp/ldap.conf/cn\=config/cn\=schema/cn\=\{4\}employee.ldif
+    cat test.conf | ${DOCKER_EXEC} tee /home/test.conf
+    cat industrialVisionUser.schema | ${DOCKER_EXEC} tee /etc/ldap/schema/industrialVisionUser.schema
+    ${DOCKER_EXEC} mkdir /var/tmp/ldap.conf
+    ${DOCKER_EXEC} slaptest -f /home/test.conf -F /var/tmp/ldap.conf/
+    ${DOCKER_EXEC} cat /var/tmp/ldap.conf/cn\=config/cn\=schema/cn\=\{4\}industrialvisionuser.ldif
     # http://www.zytrax.com/books/ldap/ch6/slapd-config.html#use-schemas
     # - remove curly braces
     # - add the suffix ",cn=schema,cn=config" to dn:
     # - add cn: below objectClass
     # - remove everything after olcObjectClasses
 
-    echo ":::: Extending Schema with the class employee"
-    ${DOCKER_EXEC} ldapadd -Y EXTERNAL -H ldapi:/// <<_EOF
-dn: cn=employee,cn=schema,cn=config
-objectClass: olcSchemaConfig
-cn: employee
-olcAttributeTypes: ( 1.1.2.1.1 NAME 'employeeRole' DESC 'Employee role' E
- QUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
-olcAttributeTypes: ( 1.1.2.1.2 NAME 'employeePIN' DESC 'Employee Authenti
- cation PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SI
- NGLE-VALUE )
-olcObjectClasses: ( 1.1.2.2.1 NAME 'Employee' DESC 'Employee' SUP organiz
- ationalPerson STRUCTURAL MUST ( cn $ employeeRole $ employeePIN ) )
-_EOF
+    echo
+    echo ":::: Extending Schema with the class industrialVisionUser"
+    cat ${AZ_LDIF_HOME}/20-employee.ldif | ${DOCKER_EXEC} ldapadd -Y EXTERNAL -H ldapi:///
     echo "---- DONE"
 
-    echo ":::: Adding the Org. Unit People"
-    ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
-dn: ou=People,dc=company,dc=cz
-objectClass: organizationalUnit
-ou: People
-description: Users
-_EOF
+    echo
+    echo ":::: Adding the Org. Unit IVisionUsers"
+    cat ${AZ_LDIF_HOME}/50-ou.ldif | sed 's/{{ LDAP_BASE_DN }}/'${LDAP_DN}'/g' | tee /tmp/ou.ldif | ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH
+    cat /tmp/ou.ldif
+    rm /tmp/ou.ldif
     echo "---- DONE"
 
+    echo
     echo ":::: Adding Jakub Filak"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
-dn: uid=jfilak,ou=People,dc=company,dc=cz
+dn: uid=jfilak,ou=IVisionUsers,dc=company,dc=cz
 cn: Jakub Filak
 objectClass: organizationalPerson
 objectClass: posixAccount
-objectClass: employee
+objectClass: ClassIndustrialVision
 sn: Filak
 uid: jfilak
 homeDirectory: /home/jfilak
 gidNumber: 1000
 uidNumber: 4269
-employeeRole: super
-employeePIN: 1969
+IVisionRole: super
+IVisionPIN: 1969
 _EOF
     echo "---- DONE"
 
     echo ":::: Adding Evil Twin - PIN 6666"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
-dn: uid=evil,ou=People,dc=company,dc=cz
+dn: uid=evil,ou=IVisionUsers,dc=company,dc=cz
 cn: Evil Twin
 objectClass: organizationalPerson
 objectClass: posixAccount
-objectClass: employee
+objectClass: ClassIndustrialVision
 sn: Twin
 uid: evil
 homeDirectory: /home/evil
 gidNumber: 6666
 uidNumber: 4269
-employeeRole: viewer
-employeePIN: 6666
+IVisionRole: viewer
+IVisionPIN: 6666
 _EOF
     echo "---- DONE"
 
     echo ":::: Adding Gabriel Angel - PIN 6666 (intentional duplicate)"
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
-dn: uid=gabo,ou=People,dc=company,dc=cz
+dn: uid=gabo,ou=IVisionUsers,dc=company,dc=cz
 cn: Gabriel Angel
 objectClass: organizationalPerson
 objectClass: posixAccount
-objectClass: employee
+objectClass: ClassIndustrialVision
 sn: Angel
 uid: gabo
 homeDirectory: /home/gabo
 gidNumber: 6666
 uidNumber: 4242
-employeeRole: super
-employeePIN: 6666
+IVisionRole: super
+IVisionPIN: 6666
 _EOF
     echo "---- DONE"
 
     echo ":::: Setting password for Jakub Filak"
-    ${DOCKER_EXEC} ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "uid=jfilak,ou=People,dc=company,dc=cz"
+    ${DOCKER_EXEC} ldappasswd $LDAP_ADMIN_CMD_AUTH -s Karel "uid=jfilak,ou=IVisionUsers,dc=company,dc=cz"
     echo "---- DONE"
 
     echo ":::: Retrieve Jakub Filak data by DN"
-    ldapsearch -H ldap://172.17.0.2 -b "uid=jfilak,ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH
+    ldapsearch -H ldap://172.17.0.2 -b "uid=jfilak,ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH
     echo "---- DONE"
 
     echo ":::: Find user login by Authentication PIN"
-    ldapsearch -H ldap://172.17.0.2 -b "ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(employeePIN=1969)" uid
+    ldapsearch -H ldap://172.17.0.2 -b "ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(IVisionPIN=1969)" uid
     echo "---- DONE"
 
     echo ":::: Find user login by Authentication PIN - duplicates"
-    ldapsearch -H ldap://172.17.0.2 -b "ou=People,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(employeePIN=6666)" uid
+    ldapsearch -H ldap://172.17.0.2 -b "ou=IVisionUsers,dc=company,dc=cz" $LDAP_ADMIN_CMD_AUTH "(IVisionPIN=6666)" uid
     echo "---- DONE"
 
     return

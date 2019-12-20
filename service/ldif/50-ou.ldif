@@ -1,4 +1,4 @@
-dn: ou=Employees,{{ LDAP_BASE_DN }}
+dn: ou=IVisionUsers,{{ LDAP_BASE_DN }}
 objectClass: organizationalUnit
-ou: Employees
-description: Employees
+ou: IVisionUsers
+description: Industrial Vision Users

@@ -14,7 +14,7 @@ def ldap_hostname():
 
 @pytest.fixture
 def us(ldap_hostname):
-    return LDAPUserStorage(f'ldap://{ldap_hostname}:389', 'People', 'company.cz',
+    return LDAPUserStorage(f'ldap://{ldap_hostname}:389', 'IVisionUsers', 'company.cz',
                            service_account=LDAPUserAuth('cn=admin,dc=company,dc=cz', 'JonSn0w'))
 
 @pytest.fixture

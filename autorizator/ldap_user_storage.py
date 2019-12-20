@@ -77,8 +77,8 @@ class LDAPUserStorageConfig:
     """A simple box for LDAP User Storage configuration"""
 
     def __init__(self):
-        self.role_field = 'employeeRole'
-        self.pin_field = 'employeePIN'
+        self.role_field = 'IVisionRole'
+        self.pin_field = 'IVisionPIN'
         self.login_field = 'uid'
         self.encoding = 'utf-8'
 

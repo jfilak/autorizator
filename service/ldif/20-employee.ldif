@@ -1,10 +1,12 @@
-dn: cn=employee,cn=schema,cn=config
+dn: cn=industrialvisionuser,cn=schema,cn=config
 objectClass: olcSchemaConfig
-cn: employee
-olcAttributeTypes: ( 1.1.2.1.1 NAME 'employeeRole' DESC 'Employee role' E
- QUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE )
-olcAttributeTypes: ( 1.1.2.1.2 NAME 'employeePIN' DESC 'Employee Authenti
- cation PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SI
- NGLE-VALUE )
-olcObjectClasses: ( 1.1.2.2.1 NAME 'Employee' DESC 'Employee' SUP organiz
- ationalPerson STRUCTURAL MUST ( cn $ employeeRole $ employeePIN ) )
+cn: industrialvisionuser
+olcAttributeTypes: ( 1.1.2.1.1 NAME 'IVisionRole' DESC 'Industrial Vison 
+ user role' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SIN
+ GLE-VALUE )
+olcAttributeTypes: ( 1.1.2.1.2 NAME 'IVisionPIN' DESC 'Industrial Vision 
+ user PIN' EQUALITY caseExactMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SING
+ LE-VALUE )
+olcObjectClasses: ( 1.1.2.2.1 NAME 'ClassIndustrialVision' DESC 'Indistri
+ al Vision User' SUP organizationalPerson STRUCTURAL MUST ( cn $ IVisionRole
+  $ IVisionPIN ) )
