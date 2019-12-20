@@ -17,7 +17,10 @@ services:
         - ldap-host
 
   phpldapadmin:
-    image: docker.io/osixia/phpldapadmin:0.9.0
+    build:
+      context: .
+      dockerfile: Dockerfile.phpldapadmin
+    image: ivision_phpldapadmin
     hostname: phpldapadmin-host
     environment:
       PHPLDAPADMIN_LDAP_HOSTS: ldap-host
