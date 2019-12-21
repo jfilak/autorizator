@@ -4,3 +4,4 @@ LABEL MAINTAINER "Jakub Filak <jakub@thefilaks.net>"
 COPY phpldapadmin/etc/config.php /container/service/phpldapadmin/assets/config/config.php
 COPY phpldapadmin/templates/creation/custom_IVisionUser.xml /var/www/phpldapadmin_bootstrap/templates/creation/
 COPY phpldapadmin/templates/modification/custom_IVisionUser.xml /var/www/phpldapadmin_bootstrap/templates/modification/
+COPY phpldapadmin/hooks/functions/user_basedn.php /var/www/phpldapadmin_bootstrap/hooks/functions/
