@@ -3,7 +3,7 @@
 
 <template>
 <askcontainer>1</askcontainer>
-<description>New Industrial Vision User</description>
+<description>Modify Industrial Vision User</description>
 <icon>address-book.png</icon>
 <invalid>0</invalid>
 <rdn>cn</rdn>
