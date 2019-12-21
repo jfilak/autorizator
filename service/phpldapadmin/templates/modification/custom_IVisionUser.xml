@@ -24,13 +24,11 @@
 </attribute>
 <attribute id="givenName">
 	<display>First name</display>
-	<onchange>=autoFill(cn;%givenName% %sn%)</onchange>
 	<order>2</order>
 	<page>1</page>
 </attribute>
 <attribute id="sn">
 	<display>Last name</display>
-	<onchange>=autoFill(cn;%givenName% %sn%)</onchange>
 	<order>3</order>
 	<page>1</page>
 </attribute>
