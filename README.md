@@ -71,10 +71,10 @@ example with the domain *example.com*. The company LDAP has organizational unit
 *staff* and stores their data in UTF-8.
 
 The Autorizator LDAP connector expects that user names are stored in
-the field *uid* and authorization uses the bind DN for the user randomjoe
+the field *cn* and authorization uses the bind DN for the user randomjoe
 as:
 
-    uid=randomjoe,ou=staff,dc=example,dc=com
+    cn=randomjoe,ou=staff,dc=example,dc=com
 
 The class *LDAPUserStorage* allows you to change the login filed via
 the property *login_field*. In case where you have the role stored
