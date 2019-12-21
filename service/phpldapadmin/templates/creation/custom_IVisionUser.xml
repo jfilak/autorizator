@@ -7,7 +7,7 @@
 <icon>address-book.png</icon>
 <invalid>0</invalid>
 <rdn>cn</rdn>
-<!--<regexp>^ou=IVisionUsers,o=.*,</regexp>-->
+<regexp>^ou=IVisionUsers,</regexp>
 <title>Industrial Vision User</title>
 <visible>1</visible>
 
