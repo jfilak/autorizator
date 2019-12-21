@@ -173,5 +173,5 @@ You need to get IP of the phpldapadmin-host with the command:
 sudo docker inspect --format '{{ .NetworkSettings.Networks.service_ldapnet.IPAddress }}' service_phpldapadmin_1
 ```
 
-the you have to open `http://$CONTAINER_IP/` in your browser and login as `cn=admin,dn=example,dn=com`
-(replace `dn=example,dn=com` with your domain configured in the file [ldap-service-variables.env](service/ldap-service-variables.env))
+the you have to open `http://$CONTAINER_IP/` in your browser and login as `cn=admin,dc=example,dc=com`
+(replace `dc=example,dc=com` with your domain configured in the file [ldap-service-variables.env](service/ldap-service-variables.env))
