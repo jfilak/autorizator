@@ -13,6 +13,7 @@
 
 <objectClasses>
 <objectClass id="ClassIndustrialVision"></objectClass>
+<objectClass id="simpleSecurityObject"></objectClass>
 </objectClasses>
 
 <attributes>
@@ -45,6 +46,13 @@
 	<display>Industrioal Vision PIN</display>
 	<order>5</order>
 	<page>1</page>
+</attribute>
+<attribute id="userPassword">
+	<display>Password</display>
+	<order>6</order>
+	<page>1</page>
+	<post>=php.PasswordEncrypt(%enc%;%userPassword%)</post>
+	<verify>1</verify>
 </attribute>
 </attributes>
 

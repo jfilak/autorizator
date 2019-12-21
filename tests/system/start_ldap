@@ -52,11 +52,13 @@ function start_ldap
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
 dn: cn=jfilak,ou=IVisionUsers,dc=company,dc=cz
 cn: jfilak
+objectClass: simpleSecurityObject
 objectClass: ClassIndustrialVision
 givenName: Jakub
 sn: Filak
 IVisionRole: super
 IVisionPIN: 1969
+userPassword: 
 _EOF
     echo "---- DONE"
 
@@ -64,11 +66,13 @@ _EOF
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
 dn: cn=evil,ou=IVisionUsers,dc=company,dc=cz
 cn: evil
+objectClass: simpleSecurityObject
 objectClass: ClassIndustrialVision
 givenName: Evil
 sn: Twin
 IVisionRole: viewer
 IVisionPIN: 6666
+userPassword: 
 _EOF
     echo "---- DONE"
 
@@ -76,11 +80,13 @@ _EOF
     ${DOCKER_EXEC} ldapadd $LDAP_ADMIN_CMD_AUTH <<_EOF
 dn: cn=gabo,ou=IVisionUsers,dc=company,dc=cz
 cn: gabo
+objectClass: simpleSecurityObject
 objectClass: ClassIndustrialVision
 givenName: Gabriel
 sn: Angel
 IVisionRole: super
 IVisionPIN: 6666
+userPassword: 
 _EOF
     echo "---- DONE"
 

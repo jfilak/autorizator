@@ -135,11 +135,13 @@ _EOF
 $ sudo ldapadd -x -W -D "cn=admin,dc=example,dc=com" <<_EOF
 dn: cn=randomjoe,ou=IVisionUsers,dc=example,dc=com
 cn: randomjoe
+objectClass: simpleSecurityObject
 objectClass: ClassIndustrialVision
 givenName: Joe
 sn: Random
 IVisionRole: super
 IVisionPIN: Y2K38
+userPassword: 
 _EOF
 ```
 
