@@ -14,6 +14,7 @@
 <objectClasses>
 <objectClass id="ClassIndustrialVision"></objectClass>
 <objectClass id="simpleSecurityObject"></objectClass>
+<objectClass id="top"></objectClass>
 </objectClasses>
 
 <attributes>
