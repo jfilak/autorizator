@@ -37,6 +37,10 @@
 <attribute id="IVisionRole">
 	<display>Industrial Vision Role</display>
 	<order>4</order>
+	<type>select</type>
+	<value id='VIEVER'>Viewever</value>
+	<value id='SUPERVISOR'>Supervisor</value>
+	<value id='ADMIN'>Administrator</value>
 	<page>1</page>
 </attribute>
 <attribute id="IVisionPIN">

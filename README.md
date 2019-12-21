@@ -20,8 +20,9 @@ from autorizator import Autorizator, RoleActionPolicy
 from autorizator.ldap_user_storage import LDAPUserStorage, LDAPUserAuth
 import autorizator.mongodb_session_manager
 
-policy_viewer = RoleActionPolicy(role='viewer', includes=None, actions=['open', 'list'])
-policy_super = RoleActionPolicy(role='super', includes=[policy_viewer.role], actions=['add', 'remove'])
+policy_viewer = RoleActionPolicy(role='VIEWER', includes=None, actions=['open', 'list'])
+policy_super = RoleActionPolicy(role='SUPERVISOR', includes=[policy_viewer.role], actions=['add', 'remove'])
+policy_admin = RoleActionPolicy(role='ADMIN', includes=[policy_viewer.role, policy_super.role], actions=['configure'])
 
 autorizator = Autorizator(policies=[policy_viewer, policy_super],
                           user_storage=LDAPUserStorage(host_uri='ldap://172.17.0.2', org_unit='People', domain='example.com',
